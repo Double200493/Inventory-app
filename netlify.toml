@@ -1,0 +1,3 @@
+# 纯静态站点：单个 index.html，无构建步骤、无后端
+[build]
+  publish = "."

@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+
+# 环境密钥
+.env
+.env.*
+!.env.example
+
+# 真实业务报表 / 导出的数据文件（含敏感信息，不入库）
+*.xls
+*.xlsx
+*.xlsm
+*.csv
+
+# 系统文件
+.DS_Store

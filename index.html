@@ -57,6 +57,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   .bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
   .bar label { color: var(--muted); font-size: 13px; }
+  .bar .export-btn { margin-left: auto; }
   input[type="date"] { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font-size: 14px; }
   .btn { padding: 9px 15px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); cursor: pointer; font-size: 14px; }
   .btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -76,6 +77,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .tag.history { background: #fce7f3; color: #9d174d; }
   .tag.unknown { background: #e5e7eb; color: #4b5563; }
   .tag.error { background: #fecaca; color: #991b1b; }
+  .tag.inventory { background: #e0e7ff; color: #3730a3; }
   select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font-size: 13px; }
   .warn-txt { color: var(--warn); font-size: 12px; }
 
@@ -120,25 +122,48 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   <p class="sub">数据只在浏览器本地处理，不上传任何服务器</p>
 
   <div class="tabs">
-    <button class="tab active" data-tab="tab1">进销存核对</button>
+    <button class="tab active" data-tab="tab0">数据整理</button>
+    <button class="tab" data-tab="tab1">进销存核对</button>
     <button class="tab" data-tab="tab2">销售跌涨幅对比</button>
   </div>
 
-  <div id="tab1">
+  <div id="tab0">
+  <div class="bar">
+    <button class="btn" id="pushBtn0">推送到月报</button>
+    <button class="btn primary export-btn" id="exportBtn0">导出 Excel（4 个 sheet）</button>
+  </div>
+  <div class="dash" id="dash0">
+    <div class="card"><div class="big" id="d0Purchase">0</div><div class="lbl">购进行</div></div>
+    <div class="card"><div class="big" id="d0Sales">0</div><div class="lbl">销售行</div></div>
+    <div class="card"><div class="big" id="d0Begin">0</div><div class="lbl">期初行</div></div>
+    <div class="card"><div class="big" id="d0End">0</div><div class="lbl">期末行</div></div>
+  </div>
+  <div class="drop" id="drop0">
+    <div><b>点击选择</b> 或把各系统导出的表格（购进 / 销售 / 期初 / 期末）.xls 一起拖到这里</div>
+    <div style="margin-top:6px">同类型自动合并成一张表；保留粉色列 + 单位</div>
+  </div>
+  <input type="file" id="fileInput0" multiple accept=".xls,.xlsx" style="display:none">
+  <div class="filelist" id="filelist0"></div>
+  <div id="result0"></div>
+  <p class="note">数据整理只做「不同系统的同类表合并」，输出干净的台账（粉色列 + 单位）。点「推送到月报」可直接拿去对账。</p>
+  </div>
+
+  <div id="tab1" style="display:none">
   <div class="bar">
     <label>核查日期（本月末）</label>
     <input type="date" id="checkDate">
     <button class="btn" id="checkBtn">检查完整性</button>
     <button class="btn" id="clearBtn">清除全部</button>
     <span class="warn-txt" id="dateWarn"></span>
+    <button class="btn primary export-btn" id="exportBtn">导出 Excel（完整表）</button>
   </div>
 
-  <div class="dash" id="dash" style="display:none">
+  <div class="dash" id="dash">
     <div class="card datecard">
       <div class="big" id="dashDate">—</div>
       <div class="lbl" id="dashRange">期初 — / 期末 —</div>
     </div>
-    <div class="card"><div class="big" id="dashTotal">0</div><div class="lbl">商品数</div></div>
+    <div class="card"><div class="big" id="dashTotal">0</div><div class="lbl">医院明细数</div></div>
     <div class="card"><div class="big stat-num ok" id="dashOk">0</div><div class="lbl">差异为 0</div></div>
     <div class="card"><div class="big stat-num bad" id="dashBad">0</div><div class="lbl">有差异</div></div>
     <div class="card"><div class="big stat-num miss" id="dashMiss">0</div><div class="lbl">缺数据</div></div>
@@ -160,10 +185,6 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <summary style="cursor:pointer;color:var(--muted);font-size:13px">历史记录</summary>
     <div id="historyList" style="margin-top:8px"></div>
   </details>
-  <div class="bar" style="margin-top:18px">
-    <button class="btn primary" id="exportBtn">导出 Excel（完整表）</button>
-  </div>
-
   <p class="note">差异 = 期末明细 − 期初明细 − 本月入库 + 本月出库（按「商品」对账）。退货在购进/销售里是负数，已自动抵扣。点击行展开医院明细。</p>
   </div>
 
@@ -177,6 +198,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       </select>
       <button class="btn" id="clearBtn2">清除全部</button>
       <span class="warn-txt" id="dateWarn2"></span>
+      <button class="btn primary export-btn" id="exportBtn2">导出 Excel</button>
+    </div>
+    <div class="dash" id="dash2">
+      <div class="card datecard">
+        <div class="big" id="dash2Range">—</div>
+        <div class="lbl">上月（基准）→ 下月（本期）</div>
+      </div>
+      <div class="card"><div class="big" id="dash2Drugs">0</div><div class="lbl">药品数</div></div>
+      <div class="card"><div class="big stat-num ok" id="dash2Up">0</div><div class="lbl">上涨</div></div>
+      <div class="card"><div class="big stat-num bad" id="dash2Down">0</div><div class="lbl">下跌</div></div>
     </div>
     <div class="drop" id="drop2">
       <div><b>点击选择</b> 或把两个月（上月 + 下月）的销售记录 .xls 拖到这里</div>
@@ -184,10 +215,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <input type="file" id="fileInput2" multiple accept=".xls,.xlsx" style="display:none">
     <div class="filelist" id="filelist2"></div>
     <div id="result2"></div>
-    <div class="bar" style="margin-top:18px">
-      <button class="btn primary" id="exportBtn2">导出 Excel</button>
-    </div>
-    <p class="note">涨跌幅 = (下月销售额 − 上月销售额) ÷ 上月销售额 × 100%。上月为 0 显示「新增」；下月为 0 显示「-100%」。</p>
+    <p class="note">涨幅/跌幅 = (下月销售数量 − 上月销售数量) ÷ 上月销售数量 × 100%。上月为 0 显示「新增」；下月为 0 显示「100%」。</p>
   </div>
 </div>
 
@@ -222,6 +250,17 @@ function dateFromName(name, year){
 function companyFromName(name){
   const m = name.match(/[一-龥A-Za-z0-9（）()]{2,20}(?:有限责任公司|股份有限公司|有限公司|公司|医院|药房|大药房|卫生院|诊所|中心)/);
   return m ? m[0] : '';
+}
+function companyIdxOf(header){
+  if(header['机构']!==undefined) return header['机构'];
+  if(header['商业公司']!==undefined) return header['商业公司'];
+  if(header['公司']!==undefined) return header['公司'];
+  return -1;
+}
+function roleFromName(name){
+  if(/期初/.test(name)) return 'begin';
+  if(/期末|期未/.test(name)) return 'end';
+  return null;
 }
 function findHeader(rows){ for(let r=0;r<Math.min(rows.length,8);r++){ const cells=(rows[r]||[]).map(normStr); if(cells.includes('品名')) return r; } return -1; }
 function buildHeaderMap(row){ const map={}; (row||[]).forEach((c,i)=>{ if(c!==null&&c!==undefined) map[normStr(c)]=i; }); return map; }
@@ -290,6 +329,8 @@ function assignRoles(){
   for(const f of state.files){
     if(f.type!=='detail' && f.type!=='history') continue;
     if(f.roleManual) continue;
+    const rn = roleFromName(f.name);
+    if(rn){ f.role = rn; continue; }
     const d = dateFromName(f.name, end.getFullYear());
     if(d && fmtDate(d)===fmtDate(begin)) f.role='begin';
     else if(d && fmtDate(d)===fmtDate(end)) f.role='end';
@@ -321,7 +362,7 @@ function compute(){
   for(const f of state.files){
     if(f.type!=='detail') continue;
     const codeIdx=f.header['商品编码'], qtyIdx=f.header['数量'];
-    const instIdx = f.header['机构']!==undefined ? f.header['机构'] : (f.header['公司']!==undefined ? f.header['公司'] : -1);
+    const instIdx = companyIdxOf(f.header);
     const supIdx = f.header['供应商'];
     for(const row of f.rows){
       const code = normCode(row[codeIdx]); if(!code) continue;
@@ -339,7 +380,7 @@ function compute(){
   for(const f of state.files){
     if(f.type!=='purchase') continue;
     const codeIdx=f.header['商品编码'], qtyIdx=f.header['数量'], dateIdx=f.header['入库日期'];
-    const companyIdx=f.header['公司'], supIdx=f.header['供应商'];
+    const companyIdx=companyIdxOf(f.header), supIdx=f.header['供应商'];
     for(const row of f.rows){
       const d=parseDate(row[dateIdx]); if(!d || d.getFullYear()!==y || d.getMonth()+1!==m) continue;
       const code=normCode(row[codeIdx]); if(!code) continue;
@@ -352,7 +393,7 @@ function compute(){
   for(const f of state.files){
     if(f.type!=='sales') continue;
     const codeIdx=f.header['商品编码'], qtyIdx=f.header['数量'], dateIdx=f.header['销售日期'];
-    const companyIdx=f.header['公司'], custIdx=f.header['客户'], custCodeIdx=f.header['客户编码'], supIdx=f.header['供货商'];
+    const companyIdx=companyIdxOf(f.header), custIdx=f.header['客户'], custCodeIdx=f.header['客户编码'], supIdx=f.header['供货商'];
     for(const row of f.rows){
       const d=parseDate(row[dateIdx]); if(!d || d.getFullYear()!==y || d.getMonth()+1!==m) continue;
       const code=normCode(row[codeIdx]); if(!code) continue;
@@ -419,6 +460,7 @@ function render(){
     const problems=[];
     for(const f of state.files){
       if(f.type!=='detail'&&f.type!=='history') continue;
+      if(roleFromName(f.name)) continue;
       const d=dateFromName(f.name, end.getFullYear());
       if(!d){ problems.push(`「${f.name}」文件名里没有日期，无法自动核对`); continue; }
       if(fmtDate(d)!==fmtDate(begin) && fmtDate(d)!==fmtDate(end)) problems.push(`「${f.name}」日期 ${fmtDate(d)} 与核查期（${fmtDate(begin)} / ${fmtDate(end)}）不符`);
@@ -437,16 +479,12 @@ function render(){
   if(state.viewHistory){ results=state.viewHistory.results; beginStr=state.viewHistory.beginStr; endStr=state.viewHistory.endStr; }
   else { const c=compute(); results=c.results; beginStr=c.beginStr; endStr=c.endStr; }
 
-  const dash=$('dash');
-  if(results.length){
-    dash.style.display='';
-    $('dashDate').textContent=endStr;
-    $('dashRange').textContent='期初 '+beginStr+' / 期末 '+endStr;
-    $('dashTotal').textContent=results.length;
-    $('dashOk').textContent=results.filter(r=>r.status==='ok').length;
-    $('dashBad').textContent=results.filter(r=>r.status==='bad').length;
-    $('dashMiss').textContent=results.filter(r=>r.status==='miss').length;
-  } else dash.style.display='none';
+  $('dashDate').textContent = endStr || '—';
+  $('dashRange').textContent = (beginStr && endStr) ? ('期初 '+beginStr+' / 期末 '+endStr) : '期初 — / 期末 —';
+  $('dashTotal').textContent = results.reduce((s,r)=>s+r.hospitals.length, 0);
+  $('dashOk').textContent = results.filter(r=>r.status==='ok').length;
+  $('dashBad').textContent = results.filter(r=>r.status==='bad').length;
+  $('dashMiss').textContent = results.filter(r=>r.status==='miss').length;
 
   const res=$('result');
   if(!state.checkDate){ res.innerHTML='<div class="empty">请先拖入文件，工具会自动识别核查日期</div>'; return; }
@@ -590,21 +628,198 @@ function exportXlsx(){
   else { doExport(); }
 }
 
+/* ---------- 板块零：数据整理（不同系统同类表合并） ---------- */
+const state0 = { files: [] };
+
+const MERGE_TYPES = {
+  purchase: { label:'购进', canonical:['商业公司','入库日期','供应商','品名','规格','厂家','商品编码','数量','单位'], display:['商业公司','供应商','品名','规格','厂家','数量','单位'] },
+  sales:    { label:'销售', canonical:['商业公司','销售日期','供货商','客户','客户编码','品名','规格','厂家','商品编码','数量','单位'], display:['商业公司','供货商','客户','品名','规格','厂家','数量','单位'] },
+  begin:    { label:'期初', canonical:['商业公司','供应商','品名','规格','厂家','商品编码','数量','单位'], display:['商业公司','供应商','品名','规格','厂家','数量','单位'] },
+  end:      { label:'期末', canonical:['商业公司','供应商','品名','规格','厂家','商品编码','数量','单位'], display:['商业公司','供应商','品名','规格','厂家','数量','单位'] },
+};
+const FIELD_ALIASES = {
+  '商业公司': ['商业公司','公司','机构'],
+  '供应商': ['供应商'],
+  '供货商': ['供货商'],
+  '客户': ['客户','医院'],
+  '客户编码': ['客户编码'],
+  '品名': ['品名','产品名称','药品名称','商品名称'],
+  '规格': ['规格'],
+  '厂家': ['厂家','生产厂家','生产企业'],
+  '商品编码': ['商品编码','产品编码','药品编码'],
+  '数量': ['数量'],
+  '单位': ['单位'],
+  '入库日期': ['入库日期'],
+  '销售日期': ['销售日期'],
+};
+function findCol(header, canonicalName){
+  const aliases = FIELD_ALIASES[canonicalName] || [canonicalName];
+  for(const a of aliases){ if(header[a]!==undefined) return header[a]; }
+  let best=-1, bestLen=Infinity;
+  for(const a of aliases){
+    for(const k in header){ if(k.indexOf(a)>=0 && k.length<bestLen){ best=header[k]; bestLen=k.length; } }
+  }
+  return best;
+}
+function classify0(rows, headerRow){
+  const title = normStr((rows[0]||[])[0]);
+  if(title.indexOf('购进')>=0) return 'purchase';
+  if(title.indexOf('销售')>=0) return 'sales';
+  const joined = rows.slice(0, Math.max(headerRow+1,3)).flat().map(normStr).join('|');
+  if(joined.indexOf('入库日期')>=0) return 'purchase';
+  if(joined.indexOf('销售日期')>=0) return 'sales';
+  if(joined.indexOf('有效期')>=0 || joined.indexOf('库存')>=0) return 'inventory';
+  return 'unknown';
+}
+async function addFiles0(fileList){
+  for(const file of fileList){
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(new Uint8Array(buf), {type:'array', cellStyles:true, cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+      const h = findHeader(rows);
+      if(h<0){ state0.files.push({name:file.name, type:'unknown', header:{}, rows:[]}); continue; }
+      const header = buildHeaderMap(rows[h]);
+      const data = rows.slice(h+1).filter(r => (r||[]).some(c => c!==null && c!==undefined && normStr(c)!==''));
+      const type = classify0(rows, h);
+      state0.files.push({name:file.name, type, header, rows:data, role: roleFromName(file.name), roleManual:false});
+    } catch(e){
+      state0.files.push({name:file.name, type:'error', header:{}, rows:[], error:String(e)});
+    }
+  }
+  render0();
+}
+function computeMerged(){
+  const merged = { purchase:[], sales:[], begin:[], end:[] };
+  for(const f of state0.files){
+    let type = f.type;
+    if(type==='inventory'){ type = f.role==='begin' ? 'begin' : f.role==='end' ? 'end' : null; if(!type) continue; }
+    const t = MERGE_TYPES[type]; if(!t) continue;
+    const colIdx = t.canonical.map(c => findCol(f.header, c));
+    for(const row of f.rows){
+      merged[type].push(colIdx.map(i => i>=0 ? (row[i] ?? null) : null));
+    }
+  }
+  return merged;
+}
+function render0(){
+  const fl=$('filelist0'); fl.innerHTML='';
+  const typeName0={purchase:'购进', sales:'销售', inventory:'库存(期初/期末)', unknown:'无法识别', error:'解析失败'};
+  state0.files.forEach((f,i)=>{
+    const div=document.createElement('div'); div.className='fileitem';
+    let extra='';
+    if(f.type==='inventory'){
+      const opts=[['','未指定期初/期末'],['begin','期初'],['end','期末']].map(([v,t])=>`<option value="${v}" ${f.role===v?'selected':''}>${t}</option>`).join('');
+      extra=`<select data-i="${i}" class="role0">${opts}</select>`;
+    } else if(f.type==='error'){ extra=`<span class="warn-txt">${escapeHtml(f.error)}</span>`; }
+    div.innerHTML=`<span class="tag ${f.type}">${typeName0[f.type]||'?'}</span><span class="name">${escapeHtml(f.name)}</span>${extra}<button class="del-btn" data-i="${i}">×</button>`;
+    fl.appendChild(div);
+  });
+  fl.querySelectorAll('select.role0').forEach(sel=>{
+    sel.addEventListener('change', e=>{ const f=state0.files[+e.target.dataset.i]; f.role=e.target.value||null; f.roleManual=true; render0(); });
+  });
+  fl.querySelectorAll('.del-btn').forEach(b=>{
+    b.addEventListener('click', e=>{ state0.files.splice(+e.target.dataset.i,1); render0(); });
+  });
+
+  const merged = computeMerged();
+  $('d0Purchase').textContent = merged.purchase.length;
+  $('d0Sales').textContent = merged.sales.length;
+  $('d0Begin').textContent = merged.begin.length;
+  $('d0End').textContent = merged.end.length;
+
+  const res=$('result0');
+  if(!state0.files.length){ res.innerHTML='<div class="empty">请先拖入各系统导出的表格（购进 / 销售 / 期初 / 期末）</div>'; return; }
+  let html='';
+  const order=[['purchase','购进'],['sales','销售'],['begin','期初'],['end','期末']];
+  let shown=0;
+  for(const [type,label] of order){
+    const rows = merged[type];
+    if(!rows.length) continue;
+    shown++;
+    const t = MERGE_TYPES[type];
+    const dispIdx = t.display.map(d=>t.canonical.indexOf(d));
+    html += `<h3 style="margin:18px 0 8px">${label} · ${rows.length} 行</h3>`;
+    html += `<table><thead><tr>${t.display.map(c=>`<th${c==='数量'?' class="num"':''}>${c}</th>`).join('')}</tr></thead><tbody>`;
+    for(const r of rows){
+      html += `<tr>${dispIdx.map((ci,i)=>`<td${t.display[i]==='数量'?' class="num"':''}>${escapeHtml(r[ci]==null?'':String(r[ci]))}</td>`).join('')}</tr>`;
+    }
+    html += '</tbody></table>';
+  }
+  if(!shown) html='<div class="empty">还没有可合并的数据（库存表请先在上方指定期初/期末）</div>';
+  res.innerHTML=html;
+}
+function export0(){
+  const merged = computeMerged();
+  const order=[['purchase','购进'],['sales','销售'],['begin','期初'],['end','期末']];
+  const wb = XLSX.utils.book_new();
+  let any=false;
+  for(const [type,label] of order){
+    const rows = merged[type];
+    if(!rows.length) continue;
+    any=true;
+    const t = MERGE_TYPES[type];
+    const dispIdx = t.display.map(d=>t.canonical.indexOf(d));
+    const aoa = [t.display, ...rows.map(r=>dispIdx.map(ci=> r[ci]==null ? '' : r[ci]))];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    XLSX.utils.book_append_sheet(wb, ws, label);
+  }
+  if(!any){ alert('没有可导出的数据'); return; }
+  XLSX.writeFile(wb, '数据整理-合并.xlsx');
+}
+function pushToMonthly(){
+  const merged = computeMerged();
+  const order=[['purchase','购进'],['sales','销售'],['begin','期初'],['end','期末']];
+  state.files = state.files.filter(f=>!f.pushed);
+  let added=0;
+  for(const [type,label] of order){
+    const rows = merged[type];
+    if(!rows.length) continue;
+    const t = MERGE_TYPES[type];
+    const header = {}; t.canonical.forEach((c,i)=>header[c]=i);
+    state.files.push({
+      name: '数据整理·'+label,
+      type: type==='begin'||type==='end' ? 'detail' : type,
+      header, rows,
+      role: type==='begin' ? 'begin' : type==='end' ? 'end' : null,
+      roleManual: true, pushed: true, company: '整合', fileDate: null,
+    });
+    added++;
+  }
+  if(!added){ alert('没有可推送的数据'); return; }
+  if(!state.checkDate){ inferDates(); }
+  switchTab('tab1');
+  render();
+}
+
 /* ---------- 板块二：销售跌涨幅对比 ---------- */
 const stateT = { files: [], sort: 'name' };
 
-function fmtMoney(n){ return (Math.round(n*100)/100).toLocaleString('zh-CN', {maximumFractionDigits:2}); }
-function pctHtml(prev, next){
+function fmtQty(n){ return (Math.round(n*100)/100).toLocaleString('zh-CN', {maximumFractionDigits:2}); }
+function upHtml(prev, next){
   if(prev===0 && next===0) return '<span style="color:var(--muted)">—</span>';
   if(prev===0) return '<span style="color:var(--ok)">新增</span>';
   const p=(next-prev)/prev*100;
-  const c=p>0?'var(--ok)':p<0?'var(--bad)':'var(--muted)';
-  return `<span style="color:${c}">${p>0?'+':''}${p.toFixed(1)}%</span>`;
+  if(p<=0) return '<span style="color:var(--muted)">—</span>';
+  return `<span style="color:var(--ok)">+${p.toFixed(1)}%</span>`;
 }
-function trendPercentVal(prev, next){
+function downHtml(prev, next){
+  if(prev===0) return '<span style="color:var(--muted)">—</span>';
+  const p=(next-prev)/prev*100;
+  if(p>=0) return '<span style="color:var(--muted)">—</span>';
+  return `<span style="color:var(--bad)">${Math.abs(p).toFixed(1)}%</span>`;
+}
+function upPercentVal(prev, next){
   if(prev===0 && next===0) return '';
   if(prev===0) return '新增';
-  return Math.round((next-prev)/prev*1000)/10;
+  const p=(next-prev)/prev*100;
+  return p>0 ? Math.round(p*10)/10 : '';
+}
+function downPercentVal(prev, next){
+  if(prev===0) return '';
+  const p=(next-prev)/prev*100;
+  return p<0 ? Math.round(Math.abs(p)*10)/10 : '';
 }
 function pctNum(h){ if(h.prev===0 && h.next===0) return null; if(h.prev===0) return Infinity; return (h.next-h.prev)/h.prev*100; }
 function sortHospitals(hospitals){
@@ -615,6 +830,19 @@ function sortHospitals(hospitals){
   else arr.sort((a,b)=>a.cust.localeCompare(b.cust,'zh'));
   return arr;
 }
+function fileMinDate(f){
+  const idx=f.header['销售日期'];
+  if(idx===undefined) return null;
+  let d=null;
+  for(const row of f.rows){ const dd=parseDate(row[idx]); if(dd && (!d||dd<d)) d=dd; }
+  return d;
+}
+function minDateOfRole(role){
+  let d=null;
+  for(const f of stateT.files){ if(f.type==='sales' && f.role===role){ const dd=fileMinDate(f); if(dd && (!d||dd<d)) d=dd; } }
+  return d;
+}
+function fmtMonth(d){ return d ? d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0') : '—'; }
 
 async function addFiles2(fileList){
   for(const file of fileList){
@@ -649,15 +877,15 @@ function computeTrend(){
   const get = (code, cust) => { const k=code+'||'+cust; if(!groups.has(k)) groups.set(k,{code,cust,name:'',spec:'',prev:0,next:0}); return groups.get(k); };
   for(const f of stateT.files){
     if(f.type!=='sales') continue;
-    const codeIdx=f.header['商品编码'], custIdx=f.header['客户'], amtIdx=f.header['金额'], nameIdx=f.header['品名'], specIdx=f.header['规格'];
+    const codeIdx=f.header['商品编码'], custIdx=f.header['客户'], qtyIdx=f.header['数量'], nameIdx=f.header['品名'], specIdx=f.header['规格'];
     for(const row of f.rows){
       const code=normCode(row[codeIdx]); if(!code) continue;
       const cust=normStr(row[custIdx]); if(!cust) continue;
       const rec=get(code, cust);
       if(!rec.name) rec.name=normStr(row[nameIdx]);
       if(!rec.spec) rec.spec=normStr(row[specIdx]);
-      const amt=parseNum(row[amtIdx])||0;
-      if(f.role==='prev') rec.prev+=amt; else if(f.role==='next') rec.next+=amt;
+      const qty=parseNum(row[qtyIdx])||0;
+      if(f.role==='prev') rec.prev+=qty; else if(f.role==='next') rec.next+=qty;
     }
   }
   const byDrug=new Map();
@@ -701,13 +929,23 @@ function renderTrend(){
 
   const drugs=computeTrend();
   const res=$('result2');
-  if(!drugs.length){ res.innerHTML='<div class="empty">请先拖入上月 + 下月的销售记录 .xls</div>'; return; }
-  let html=`<table><thead><tr><th>药品</th><th>医院 / 客户</th><th class="num">上月销售额</th><th class="num">下月销售额</th><th class="num">涨跌幅</th></tr></thead><tbody>`;
+  let up=0, down=0;
   for(const d of drugs){
     const pT=d.hospitals.reduce((s,h)=>s+h.prev,0), nT=d.hospitals.reduce((s,h)=>s+h.next,0);
-    html+=`<tr style="background:color-mix(in srgb, var(--accent) 8%, var(--card));font-weight:600"><td>${escapeHtml(d.name)}${d.spec?' <span style="color:var(--muted);font-weight:400">'+escapeHtml(d.spec)+'</span>':''}</td><td>（合计）</td><td class="num">${fmtMoney(pT)}</td><td class="num">${fmtMoney(nT)}</td><td class="num">${pctHtml(pT,nT)}</td></tr>`;
+    if(nT>pT) up++; else if(nT<pT) down++;
+  }
+  const prevD=minDateOfRole('prev'), nextD=minDateOfRole('next');
+  $('dash2Range').textContent = (prevD||nextD) ? fmtMonth(prevD)+' → '+fmtMonth(nextD) : '—';
+  $('dash2Drugs').textContent = drugs.length;
+  $('dash2Up').textContent = up;
+  $('dash2Down').textContent = down;
+  if(!drugs.length){ res.innerHTML='<div class="empty">请先拖入上月 + 下月的销售记录 .xls</div>'; return; }
+  let html=`<table><thead><tr><th>药品</th><th>医院 / 客户</th><th class="num">上月销售数量</th><th class="num">下月销售数量</th><th class="num">涨幅</th><th class="num">跌幅</th></tr></thead><tbody>`;
+  for(const d of drugs){
+    const pT=d.hospitals.reduce((s,h)=>s+h.prev,0), nT=d.hospitals.reduce((s,h)=>s+h.next,0);
+    html+=`<tr style="background:color-mix(in srgb, var(--accent) 8%, var(--card));font-weight:600"><td>${escapeHtml(d.name)}${d.spec?' <span style="color:var(--muted);font-weight:400">'+escapeHtml(d.spec)+'</span>':''}</td><td>（合计）</td><td class="num">${fmtQty(pT)}</td><td class="num">${fmtQty(nT)}</td><td class="num">${upHtml(pT,nT)}</td><td class="num">${downHtml(pT,nT)}</td></tr>`;
     for(const h of d.hospitals){
-      html+=`<tr><td></td><td>${escapeHtml(h.cust)}</td><td class="num">${fmtMoney(h.prev)}</td><td class="num">${fmtMoney(h.next)}</td><td class="num">${pctHtml(h.prev,h.next)}</td></tr>`;
+      html+=`<tr><td></td><td>${escapeHtml(h.cust)}</td><td class="num">${fmtQty(h.prev)}</td><td class="num">${fmtQty(h.next)}</td><td class="num">${upHtml(h.prev,h.next)}</td><td class="num">${downHtml(h.prev,h.next)}</td></tr>`;
     }
   }
   html+='</tbody></table>';
@@ -717,14 +955,14 @@ function renderTrend(){
 function exportTrend(){
   const drugs=computeTrend();
   if(!drugs.length){ alert('没有可导出的数据'); return; }
-  const rows=[['药品','规格','医院/客户','上月销售额','下月销售额','涨跌幅(%)']];
+  const rows=[['药品','规格','医院/客户','上月销售数量','下月销售数量','涨幅(%)','跌幅(%)']];
   const colorRows=[];
   for(const d of drugs){
     const pT=d.hospitals.reduce((s,h)=>s+h.prev,0), nT=d.hospitals.reduce((s,h)=>s+h.next,0);
-    rows.push([d.name, d.spec, '（合计）', Math.round(pT*100)/100, Math.round(nT*100)/100, trendPercentVal(pT,nT)]);
+    rows.push([d.name, d.spec, '（合计）', Math.round(pT*100)/100, Math.round(nT*100)/100, upPercentVal(pT,nT), downPercentVal(pT,nT)]);
     colorRows.push({ri: rows.length-1, hex:'DBEAFE'});
     for(const h of d.hospitals){
-      rows.push(['', '', h.cust, Math.round(h.prev*100)/100, Math.round(h.next*100)/100, trendPercentVal(h.prev,h.next)]);
+      rows.push(['', '', h.cust, Math.round(h.prev*100)/100, Math.round(h.next*100)/100, upPercentVal(h.prev,h.next), downPercentVal(h.prev,h.next)]);
     }
   }
   const ws=XLSX.utils.aoa_to_sheet(rows);
@@ -749,14 +987,11 @@ $('modalClose').addEventListener('click', closeModal);
 $('modalExport').addEventListener('click', ()=>{ closeModal(); doExport(); });
 
 // tab 切换
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    $('tab1').style.display = t.dataset.tab==='tab1' ? '' : 'none';
-    $('tab2').style.display = t.dataset.tab==='tab2' ? '' : 'none';
-  });
-});
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x.dataset.tab===name));
+  ['tab0','tab1','tab2'].forEach(id=>{ $(id).style.display = id===name ? '' : 'none'; });
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>switchTab(t.dataset.tab)));
 // 板块二事件
 const drop2=$('drop2'), fileInput2=$('fileInput2');
 drop2.addEventListener('click', ()=>fileInput2.click());
@@ -768,9 +1003,20 @@ $('clearBtn2').addEventListener('click', ()=>{ stateT.files=[]; renderTrend(); }
 $('exportBtn2').addEventListener('click', exportTrend);
 $('sortTrend').addEventListener('change', e=>{ stateT.sort=e.target.value; renderTrend(); });
 
+// 板块零事件
+const drop0=$('drop0'), fileInput0=$('fileInput0');
+drop0.addEventListener('click', ()=>fileInput0.click());
+fileInput0.addEventListener('change', e=>{ addFiles0(e.target.files); e.target.value=''; });
+drop0.addEventListener('dragover', e=>{ e.preventDefault(); drop0.classList.add('over'); });
+drop0.addEventListener('dragleave', ()=>drop0.classList.remove('over'));
+drop0.addEventListener('drop', e=>{ e.preventDefault(); drop0.classList.remove('over'); addFiles0(e.dataTransfer.files); });
+$('exportBtn0').addEventListener('click', export0);
+$('pushBtn0').addEventListener('click', pushToMonthly);
+
 state.checkDate = fmtDate(new Date());
 $('checkDate').value = state.checkDate;
 render();
+render0();
 </script>
 </body>
 </html>

@@ -1,0 +1,238 @@
+<title>进销存助手项目档案</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* 布局：单栏文档，最大宽 760，居中留白；气质=医药临床的冷静青绿 + 记账表格的秩序感 */
+:root {
+  --bg: #f6f8f7;
+  --surface: #ffffff;
+  --surface-2: #eef2f0;
+  --fg: #1c2421;
+  --muted: #5a6a62;
+  --line: #e0e7e3;
+  --accent: #0e7c66;
+  --accent-soft: #dcefe9;
+  --accent-ink: #0a5c4c;
+  --ok: #18794e;
+  --warn: #a66908;
+  --bad: #c0392b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121614;
+    --surface: #1a211e;
+    --surface-2: #202824;
+    --fg: #e7ece9;
+    --muted: #97a69e;
+    --line: #2b342f;
+    --accent: #3fd0a6;
+    --accent-soft: #17332b;
+    --accent-ink: #8fe3c8;
+    --ok: #4cc38a;
+    --warn: #e0b45c;
+    --bad: #e57368;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121614;
+  --surface: #1a211e;
+  --surface-2: #202824;
+  --fg: #e7ece9;
+  --muted: #97a69e;
+  --line: #2b342f;
+  --accent: #3fd0a6;
+  --accent-soft: #17332b;
+  --accent-ink: #8fe3c8;
+  --ok: #4cc38a;
+  --warn: #e0b45c;
+  --bad: #e57368;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.75;
+  font-size: 15px;
+}
+.page { max-width: 760px; margin-inline: auto; padding-inline: 20px; padding-block: 56px 80px; }
+
+/* 页眉 */
+.eyebrow {
+  font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700; margin: 0 0 12px;
+}
+h1.title {
+  font-family: "Noto Serif SC", serif;
+  font-size: clamp(30px, 5.5vw, 42px);
+  line-height: 1.25; font-weight: 700; margin: 0 0 14px; text-wrap: balance;
+}
+.subtitle { color: var(--muted); font-size: 16px; margin: 0 0 26px; max-width: 40em; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; }
+.chip {
+  font-size: 12.5px; padding: 4px 11px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--muted); background: var(--surface);
+}
+
+/* 小节 */
+section { margin-top: 44px; }
+h2 {
+  font-family: "Noto Serif SC", serif; font-size: 22px; font-weight: 700;
+  margin: 0 0 6px; line-height: 1.35;
+}
+h2 .no { color: var(--accent); margin-right: 10px; font-variant-numeric: tabular-nums; }
+.lede { color: var(--muted); margin: 0 0 18px; }
+p { margin: 0 0 14px; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 700; }
+
+/* 层级示意（药品 → 商业公司 → 医院） */
+.chain { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin: 18px 0 6px; }
+.chain .node { flex: 1 1 150px; min-width: 140px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.chain .node .k { font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+.chain .node .v { font-weight: 700; font-size: 15px; }
+.chain .arrow { align-self: center; color: var(--accent); font-weight: 700; flex: 0 0 auto; }
+
+/* 表格 */
+.tblwrap { overflow-x: auto; margin: 16px 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { background: var(--surface-2); font-weight: 700; color: var(--fg); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: none; }
+td .pink { color: var(--bad); font-weight: 500; }
+
+/* 公式 */
+.formula {
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: 8px; padding: 16px 18px; margin: 16px 0 6px;
+}
+.formula .eq { font-family: ui-monospace, "SF Mono", "Menlo", monospace; font-size: 16px; font-weight: 700; letter-spacing: .02em; }
+.formula .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+/* 时间线 */
+.timeline { list-style: none; margin: 20px 0 0; padding: 0; border-left: 2px solid var(--line); }
+.timeline li { position: relative; padding: 0 0 26px 26px; }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline li::before {
+  content: ""; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--accent); border: 2px solid var(--bg);
+}
+.timeline .phase { display: block; font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .06em; margin-bottom: 2px; }
+.timeline h3 { margin: 0 0 6px; font-size: 16.5px; font-weight: 700; }
+.timeline p { color: var(--muted); margin: 0; }
+
+/* 三板块卡片 */
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0 6px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.card .idx { font-family: "Noto Serif SC", serif; color: var(--accent); font-size: 22px; font-weight: 700; }
+.card h3 { margin: 8px 0 6px; font-size: 15.5px; }
+.card p { color: var(--muted); font-size: 13.5px; margin: 0; }
+
+/* 待办 */
+ul.todo { margin: 12px 0 6px; padding-left: 20px; }
+ul.todo li { margin-bottom: 8px; color: var(--muted); }
+
+.footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+code { font-family: ui-monospace, "SF Mono", "Menlo", monospace; font-size: .92em; background: var(--surface-2); padding: 1px 6px; border-radius: 5px; }
+</style>
+
+<div class="page">
+  <p class="eyebrow">项目档案 · Project Archive</p>
+  <h1 class="title">药品进销存月报助手</h1>
+  <p class="subtitle">一个纯前端、离线、单文件的工具，帮妈妈把多家「供应商服务系统」导出的表格整合与对账，自动生成月度进销存报告。</p>
+  <div class="meta">
+    <span class="chip">交付形态：单文件 HTML（离线可用）+ 桌面 ZIP</span>
+    <span class="chip">技术：SheetJS 内联解析 .xls/.xlsx</span>
+    <span class="chip">无后端 · 无联网 · 数据不出本机</span>
+  </div>
+
+  <section>
+    <h2><span class="no">01</span>项目缘起</h2>
+    <p class="lede">妈妈的每月手工流程：登录多家商业公司各自的系统 → 每个系统导出 4 张表 → 手工整理、对账、排查差异。</p>
+    <p>妈妈是供应商侧，每月要对接多家商业公司（南京药业、南京医药苏州恒昇、江苏华晓、南通健桥……）。每家都有一套独立的「供应商服务系统」，每套系统要导出 <strong>购进、销售、期初、期末</strong> 4 张表。几十张表的手工合并和对账，是她每月最耗时、最容易出错的一步。这个工具的目标，就是把「导出之后的整理 + 对账」全部自动化。</p>
+  </section>
+
+  <section>
+    <h2><span class="no">02</span>业务模型</h2>
+    <p class="lede">一条三级供应链，数据层层展开。</p>
+    <div class="chain">
+      <div class="node"><p class="k">第 1 级</p><p class="v">药品（10 种）</p></div>
+      <div class="arrow">→</div>
+      <div class="node"><p class="k">第 2 级</p><p class="v">商业公司（13 家）</p></div>
+      <div class="arrow">→</div>
+      <div class="node"><p class="k">第 3 级</p><p class="v">医院（各配本地区 N 家）</p></div>
+    </div>
+    <p>药先铺到商业公司，商业公司再配送到自己地区的医院。对账的粒度是「商品」，匹配靠 <strong>商品编码 / 客户编码</strong>（名称会不一致，不能拿名称匹配）；批号不参与对账。</p>
+  </section>
+
+  <section>
+    <h2><span class="no">03</span>输入数据（4 张表）</h2>
+    <p class="lede">每套系统导出 4 张表，工具自动识别类型并合并同类表。<span class="pink" style="color:var(--bad)">粉色底</span>是妈妈在示例里标出的「她需要的列」。</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>表</th><th>标题行</th><th>列数</th><th>粉色列（她需要的）</th></tr></thead>
+        <tbody>
+          <tr><td><strong>购进</strong></td><td>购进记录</td><td>19</td><td>商业公司、供应商、品名、规格、厂家、数量</td></tr>
+          <tr><td><strong>销售</strong></td><td>销售记录</td><td>26</td><td>商业公司、供货商、客户、品名、规格、厂家、数量</td></tr>
+          <tr><td><strong>期初 / 期末</strong></td><td>历史库存明细</td><td>12</td><td>供应商、品名、规格、厂家、数量、商业公司</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:10px">粉色列的规律就是「谁 + 什么药 + 多少」：<strong>商业公司 / 供应商(供货商) / 客户 / 品名 / 规格 / 厂家 / 数量</strong>，另加「单位」。没标粉的（商品编码、日期、批号、价格、金额…）是系统自带的辅助列——但<strong>商品编码和日期对账时仍要用</strong>，所以工具内部完整保留，只在展示/导出时按「粉色列 + 单位」呈现。</p>
+  </section>
+
+  <section>
+    <h2><span class="no">04</span>核心对账规则</h2>
+    <div class="formula">
+      <div class="eq">差异 = 期末明细 − 期初明细 − 本月入库 + 本月出库</div>
+      <div class="note">按「商品」对账（不按批号）；退货在购进/销售里是负数，已自动抵扣；单位是盒 / 支（同一商品编码内部一致）。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">05</span>开发历程</h2>
+    <p class="lede">从初版到交付的完整时间线。</p>
+    <ol class="timeline">
+      <li><span class="phase">阶段一</span><h3>初版成型</h3><p>两个板块：「进销存核对」做对账与差异排查，「销售跌涨幅对比」做上月 vs 下月的销量对比。单文件、离线、无后端。</p></li>
+      <li><span class="phase">阶段二</span><h3>交互打磨</h3><p>导出按钮移到右上角；跌涨幅改为按「销售数量」而非金额；涨幅与跌幅分两列展示；dashboard 显示对比时间并改为空态常显。</p></li>
+      <li><span class="phase">阶段三</span><h3>真实数据接入</h3><p>读懂 4 份真实 .xls，确认三类表结构与粉色列含义；发现公司列名叫「商业公司」，而月报当时只认「公司/机构」，导致识别不到公司。</p></li>
+      <li><span class="phase">阶段四</span><h3>月报升级</h3><p>月报识别「商业公司」列；期初/期末靠文件名关键字「期初/期末/期未」自动区分；dashboard 增加「医院明细数」（按 产品+商业+医院 计数）。</p></li>
+      <li><span class="phase">阶段五</span><h3>新增「数据整理」板块</h3><p>放在月报前面，专门把不同系统的同类表合并：自动分类、按列名别名归一化、保留粉色列 + 单位，可下载 4-sheet Excel，也可一键推送到月报。</p></li>
+      <li><span class="phase">阶段六</span><h3>打包交付</h3><p>用 Python zipfile 以 UTF-8 文件名打包成离线 ZIP，解压即用。</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="no">06</span>最终产出（三个板块）</h2>
+    <div class="grid3">
+      <div class="card"><div class="idx">①</div><h3>数据整理</h3><p>多系统同类表合并，输出干净的粉色列 + 单位台账；可下载、可推送月报。</p></div>
+      <div class="card"><div class="idx">②</div><h3>进销存核对</h3><p>核查日期、差异对账、dashboard、缺失文件弹窗、历史记录、带底色导出。</p></div>
+      <div class="card"><div class="idx">③</div><h3>销售跌涨幅对比</h3><p>上月 vs 下月按销售数量对比，涨幅/跌幅分列，dashboard 显示对比月份。</p></div>
+    </div>
+    <p style="margin-top:14px">交付物：<code>index.html</code>（离线双击可用）＋ 桌面 <code>药品进销存月报助手-离线版.zip</code>。</p>
+  </section>
+
+  <section>
+    <h2><span class="no">07</span>技术实现要点</h2>
+    <ul class="todo">
+      <li>纯前端单文件，SheetJS（xlsx）内联，直接解析 .xls / .xlsx，无需网络与后端，数据不出本机。</li>
+      <li>列名用「别名归一化」跨系统对齐（如公司 = 商业公司 / 公司 / 机构；客户 = 客户 / 医院）。</li>
+      <li>粉色列作为「需要的列」的约定，导出时只保留粉色列 + 单位。</li>
+      <li>历史记录存 localStorage（在 Safari <code>file://</code> 下可能失效，属已知限制）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="no">08</span>待办 / 待确认</h2>
+    <ul class="todo">
+      <li>医院名册：是否需要把没销量的医院也列全并补 0。</li>
+      <li>是否要核对金额（目前只核对数量）。</li>
+      <li>多仓库场景是否要支持。</li>
+    </ul>
+  </section>
+
+  <p class="footer">药品进销存月报助手 · 项目档案 · 记录于 2026-10-13</p>
+</div>
